@@ -1,0 +1,110 @@
+body {
+  font-family: 'Roboto', sans-serif;
+}
+
+#container {
+  display: flex;
+  position: relative;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  width: 920px;
+  margin: 0 auto;
+  background-color: #ccc;
+  padding: 10px;
+  border-radius: 3px;
+}
+
+.col {
+  position: relative;
+  display: block;
+  list-style-type: none;
+  width:33%;
+  padding: 5px;
+  margin: 5px;
+  border-radius: 3px;
+}
+
+.col li {
+  padding: 20px;
+  display: block;
+}
+
+.col .title {
+  text-transform: uppercase;
+  font-weight: bold;
+  background-color: rgb(48, 48, 48);
+  color: #FFF;
+  text-align: center;
+}
+
+.tsk {
+  background: #ccc;
+  min-height: 30px;
+  display: block;
+  margin: 5px 0px;
+  position: relative;
+  max-width: 100%;
+  word-wrap: break-word;
+  box-sizing: border-box;
+}
+
+.tsk:hover {
+  cursor: grab;
+}
+
+.tsk.dragged {
+  position: absolute;
+  z-index: 999;
+  pointer-events: none;
+
+}
+
+#shadow {
+  background-color: beige;
+  pointer-events: none;
+}
+
+#task-remove {
+  background: none;
+  border: none;
+  font-size: 30px;
+  color: rgb(129, 129, 129);
+  position: absolute;
+  top:0;
+  right: 0;
+}
+
+.add-task {
+  width: 100%;
+  background: none;
+  display: block;
+  border: none;
+  padding: 10px;
+  text-align: left;
+  font-weight: bolder;
+  text-shadow: 1px 0px rgb(170, 170, 170);
+  color: rgb(48, 48, 48);
+}
+
+#todo {
+  background-color: rgb(235, 82, 113);
+}
+
+#in-progress {
+  background-color: burlywood;
+}
+
+#done {
+  background-color: rgb(142, 235, 157);
+}
+
+#new-task-form {
+  flex-direction: row;
+}
+
+#new-task-form textarea {
+  min-width: 100%;
+  resize: vertical;
+  box-sizing: border-box;
+}
