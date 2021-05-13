@@ -71,13 +71,12 @@ export default class BoardMaker {
         subEv.preventDefault();
 
         form.remove();
-        if (input.value !== '' ) {
-        this.notes[column.id].push(input.value);
-        this.drawTask(input.value, 'beforeend', column);
-        this.refreshStorage();
+        if (input.value !== '') {
+          this.notes[column.id].push(input.value);
+          this.drawTask(input.value, 'beforeend', column);
+          this.refreshStorage();
         }
 
-        
         this.drawAddButton(column);
       });
 
@@ -158,13 +157,10 @@ export default class BoardMaker {
         this.middle = this.nearest.getBoundingClientRect().y + this.nearest.offsetHeight / 2;
         if (evt.pageY < this.middle) {
           this.nearest.insertAdjacentElement('afterbegin', this.shadowEl);
-        }
-        else {
+        } else {
           this.nearest.insertAdjacentElement('beforeend', this.shadowEl);
         }
-      }
-
-      else if (this.nearest.className === 'col') {
+      } else if (this.nearest.className === 'col') {
         this.nearest.querySelector('.add-task').insertAdjacentElement('beforebegin', this.shadowEl);
       }
     });
@@ -176,19 +172,16 @@ export default class BoardMaker {
       this.nearest = document.elementFromPoint(evt.clientX, evt.clientY);
       document.body.style.cursor = 'default';
       this.draggedEl.classList.remove('dragged');
-      
+
       const currentList = this.notes[this.currentParentId];
-        currentList.splice(currentList.indexOf(this.draggedEl.innerText), 1);
-        this.notes[this.currentParentId] = currentList;
+      currentList.splice(currentList.indexOf(this.draggedEl.innerText), 1);
+      this.notes[this.currentParentId] = currentList;
 
+      const newParent = this.nearest.closest('.col').id;
+      const newList = this.notes[newParent];
+      const nearestPosition = newList.indexOf(this.nearest.innerText);
 
-        const newParent = this.nearest.closest('.col').id;
-        const newList = this.notes[newParent];
-        const nearestPosition = newList.indexOf(this.nearest.innerText);
-
-      
       if (this.nearest.className === 'tsk') {
-
         this.middle = this.nearest.getBoundingClientRect().y + this.nearest.offsetHeight / 2;
         if (evt.pageY < this.middle) {
           this.position = 'beforebegin';
@@ -198,22 +191,16 @@ export default class BoardMaker {
 
         this.nearest.insertAdjacentElement(this.position, this.draggedEl);
 
-        
-
         if (this.position === 'beforebegin') {
           newList.splice(nearestPosition, 0, this.draggedEl.innerText);
-          } else {
+        } else {
           newList.splice(nearestPosition + 1, 0, this.draggedEl.innerText);
         }
         this.notes[newParent] = newList;
-      }
-
-      else if (this.nearest.className === 'col') {
+      } else if (this.nearest.className === 'col') {
         this.nearest.querySelector('.add-task').insertAdjacentElement('beforebegin', this.draggedEl);
         this.notes[this.nearest.id].push(this.draggedEl.innerText);
-      }
-
-      else {
+      } else {
         this.currentPrevious.insertAdjacentElement('afterend', this.draggedEl);
         this.draggedEl.style.removeProperty('top');
         this.draggedEl.style.removeProperty('left');
@@ -222,7 +209,6 @@ export default class BoardMaker {
         return;
       }
 
-      
       this.refreshStorage();
       this.draggedEl.style.removeProperty('top');
       this.draggedEl.style.removeProperty('left');
