@@ -1,68 +1,74 @@
 body {
   font-family: 'Roboto', sans-serif;
+  margin: 0;
 }
 
 #container {
   display: flex;
+  height: 100vh;
+  box-sizing: border-box;
   position: relative;
   flex-direction: row;
   flex-wrap: nowrap;
-  justify-content: space-between;
-  width: 920px;
-  margin: 0 auto;
-  background-color: #ccc;
-  padding: 10px;
-  border-radius: 3px;
+  justify-content: space-around;
+  align-items:baseline;
+  width: 910px;
+  margin: 0 auto; 
+  background-color: rgb(0, 0, 0);
 }
 
 .col {
   position: relative;
-  display: block;
-  list-style-type: none;
-  width:33%;
-  padding: 5px;
-  margin: 5px;
-  border-radius: 3px;
+  width: 310px;
+  height: 100%;
+  box-sizing: border-box;
 }
 
-.col li {
-  padding: 20px;
-  display: block;
+.col:first-child {
+  border-right: 5px solid #FFF;
 }
+
+.col:last-child {
+  border-left: 5px solid #FFF;
+}
+
 
 .col .title {
   text-transform: uppercase;
   font-weight: bold;
+  padding: 10px 0;
   background-color: rgb(48, 48, 48);
   color: #FFF;
   text-align: center;
 }
 
 .tsk {
-  background: #ccc;
-  min-height: 30px;
-  display: block;
-  margin: 5px 0px;
+  line-height: 40px;
+  padding-top:20px;
+  margin: 0px;
+  background-color: #ccc;
+  height:max-content;
   position: relative;
-  max-width: 100%;
+  width:auto;
   word-wrap: break-word;
   box-sizing: border-box;
-}
-
-.tsk:hover {
-  cursor: grab;
+  border-bottom: 4px solid #000000;
 }
 
 .tsk.dragged {
   position: absolute;
   z-index: 999;
   pointer-events: none;
-
+  border: none;
+  background: #FFF;
 }
 
 #shadow {
   background-color: beige;
   pointer-events: none;
+  position: relative;
+  box-sizing: border-box;
+  width:100%;
 }
 
 #task-remove {
@@ -78,7 +84,7 @@ body {
 .add-task {
   width: 100%;
   background: none;
-  display: block;
+  position: relative;
   border: none;
   padding: 10px;
   text-align: left;
@@ -88,7 +94,7 @@ body {
 }
 
 #todo {
-  background-color: rgb(235, 82, 113);
+  background-color: rgb(255, 133, 157);
 }
 
 #in-progress {
@@ -101,6 +107,7 @@ body {
 
 #new-task-form {
   flex-direction: row;
+  padding: 10px;
 }
 
 #new-task-form textarea {

@@ -1,13 +1,14 @@
 export default class BoardMaker {
   constructor() {
     this.notes = JSON.parse(window.localStorage.getItem('notes')) || { todo: [], 'in-progress': [], done: [] };
-    this.ghostEl = null;
     this.draggedEl = null;
-    this.closest = null;
+    this.nearest = null;
+    this.shadowEl = document.createElement('div');
+    this.shadowEl.id = 'shadow';
   }
 
   drawTask(task, position, element) {
-    const tsk = document.createElement('li');
+    const tsk = document.createElement('div');
     tsk.className = 'tsk';
     tsk.innerHTML = '';
     tsk.innerText = task;
@@ -70,10 +71,13 @@ export default class BoardMaker {
         subEv.preventDefault();
 
         form.remove();
+        if (input.value !== '' ) {
         this.notes[column.id].push(input.value);
-        this.refreshStorage();
-
         this.drawTask(input.value, 'beforeend', column);
+        this.refreshStorage();
+        }
+
+        
         this.drawAddButton(column);
       });
 
@@ -93,11 +97,11 @@ export default class BoardMaker {
     container.id = 'container';
 
     ['todo', 'in-progress', 'done'].forEach((column) => {
-      const col = document.createElement('ul');
+      const col = document.createElement('div');
       col.className = 'col';
       col.id = column;
 
-      const colTitle = document.createElement('li');
+      const colTitle = document.createElement('div');
       colTitle.classList.add('title');
       colTitle.innerText = column;
 
@@ -119,14 +123,25 @@ export default class BoardMaker {
       if (!evt.target.classList.contains('tsk')) { return; }
       evt.target.removeChild(document.getElementById('task-remove'));
       this.draggedEl = evt.target;
-      this.ghostEl = evt.target.cloneNode(true);
-      this.ghostEl.classList.add('dragged');
+      this.currentParent = this.draggedEl.closest('.col');
+      this.currentParentId = this.currentParent.id;
+      this.currentPrevious = this.draggedEl.previousSibling;
       document.body.style.cursor = 'grabbing';
-      document.body.appendChild(this.ghostEl);
-      this.ghostEl.style.width = `${this.draggedEl.offsetWidth}px`;
-      this.ghostEl.style.height = `${this.draggedEl.offsetHeight}px`;
-      this.ghostEl.style.left = `${evt.pageX - this.ghostEl.offsetWidth / 2}px`;
-      this.ghostEl.style.top = `${evt.pageY - this.ghostEl.offsetHeight / 2}px`;
+      this.elemWidth = `${this.draggedEl.offsetWidth}px`;
+      this.elemHeight = `${this.draggedEl.offsetHeight}px`;
+      const elemPosition = this.draggedEl.getBoundingClientRect();
+      this.elemLeft = evt.clientX - elemPosition.x;
+      this.elemTop = evt.clientY - elemPosition.y;
+
+      this.shadowEl.style.height = `${this.draggedEl.offsetHeight}px`;
+
+      this.draggedEl.classList.add('dragged');
+      this.draggedEl.style.left = `${evt.clientX - this.elemLeft}px`;
+      this.draggedEl.style.top = `${evt.clientY - this.elemTop}px`;
+      this.draggedEl.style.width = this.elemWidth;
+      this.draggedEl.style.height = this.elemHeight;
+
+      document.body.appendChild(this.draggedEl);
     });
 
     document.body.addEventListener('mousemove', (evt) => {
@@ -134,66 +149,86 @@ export default class BoardMaker {
       if (!this.draggedEl) {
         return;
       }
-      this.closest = document.elementFromPoint(evt.clientX, evt.clientY);
-      document.body.style.cursor = 'grabbing';
-      this.ghostEl.style.left = `${evt.pageX - this.ghostEl.offsetWidth / 2}px`;
-      this.ghostEl.style.top = `${evt.pageY - this.ghostEl.offsetHeight / 2}px`;
 
-      const tskShadow = document.createElement('li');
-      tskShadow.id = 'shadow';
-      tskShadow.style.width = this.draggedEl.offsetWidth;
-      tskShadow.style.height = this.draggedEl.offsetHeight;
+      this.nearest = document.elementFromPoint(evt.clientX, evt.clientY);
+      this.draggedEl.style.left = `${evt.clientX - this.elemLeft}px`;
+      this.draggedEl.style.top = `${evt.clientY - this.elemTop}px`;
 
-      if (this.closest.classList.contains('tsk')) {
-        this.middle = this.closest.getBoundingClientRect().y + this.closest.offsetHeight / 2;
-        if (evt.pageY < this.middle) this.position = 'beforebegin';
-        else this.position = 'afterend';
-        if (document.getElementById('shadow')) document.getElementById('shadow').remove();
-        if (this.closest !== this.draggedEl) {
-          this.closest.insertAdjacentElement(this.position, tskShadow);
+      if (this.nearest.className === 'tsk') {
+        this.middle = this.nearest.getBoundingClientRect().y + this.nearest.offsetHeight / 2;
+        if (evt.pageY < this.middle) {
+          this.nearest.insertAdjacentElement('afterbegin', this.shadowEl);
         }
+        else {
+          this.nearest.insertAdjacentElement('beforeend', this.shadowEl);
+        }
+      }
+
+      else if (this.nearest.className === 'col') {
+        this.nearest.querySelector('.add-task').insertAdjacentElement('beforebegin', this.shadowEl);
       }
     });
 
-    document.body.addEventListener('mouseleave', () => {
-      if (document.getElementById('shadow')) document.getElementById('shadow').remove();
-    });
-
     document.body.addEventListener('mouseup', (evt) => {
-      if (document.getElementById('shadow')) document.getElementById('shadow').remove();
-      this.closest = document.elementFromPoint(evt.clientX, evt.clientY);
+      evt.preventDefault();
+      if (!this.draggedEl) { return; }
+      document.body.removeChild(this.draggedEl);
+      this.nearest = document.elementFromPoint(evt.clientX, evt.clientY);
       document.body.style.cursor = 'default';
-      if (!this.draggedEl || !this.closest) { return; }
-      const currentParent = this.draggedEl.parentElement.id;
-      const currentList = this.notes[currentParent];
-      currentList.splice(currentList.indexOf(this.draggedEl.innerText), 1);
-      this.notes[currentParent] = currentList;
+      this.draggedEl.classList.remove('dragged');
+      
+      const currentList = this.notes[this.currentParentId];
+        currentList.splice(currentList.indexOf(this.draggedEl.innerText), 1);
+        this.notes[this.currentParentId] = currentList;
 
-      if (this.closest.classList.contains('tsk')) {
-        this.closest.insertAdjacentElement(this.position, this.draggedEl);
-        const newParent = this.closest.parentElement.id;
+
+        const newParent = this.nearest.closest('.col').id;
         const newList = this.notes[newParent];
-        const closestPosition = newList.indexOf(this.closest.innerHTML);
-        if (this.position === 'beforebegin') {
-          if (closestPosition > 0) newList.splice(closestPosition - 1, 0, this.draggedEl.innerText);
-          else newList.splice(0, 0, this.draggedEl.innerText);
+        const nearestPosition = newList.indexOf(this.nearest.innerText);
+
+      
+      if (this.nearest.className === 'tsk') {
+
+        this.middle = this.nearest.getBoundingClientRect().y + this.nearest.offsetHeight / 2;
+        if (evt.pageY < this.middle) {
+          this.position = 'beforebegin';
         } else {
-          newList.splice(closestPosition, 0, this.draggedEl.innerText);
+          this.position = 'afterend';
+        }
+
+        this.nearest.insertAdjacentElement(this.position, this.draggedEl);
+
+        
+
+        if (this.position === 'beforebegin') {
+          newList.splice(nearestPosition, 0, this.draggedEl.innerText);
+          } else {
+          newList.splice(nearestPosition + 1, 0, this.draggedEl.innerText);
         }
         this.notes[newParent] = newList;
       }
 
-      if (this.closest.classList.contains('col')) {
-        this.closest.querySelector('.add-task').insertAdjacentElement('beforebegin', this.draggedEl);
-        this.notes[this.closest.id].push(this.draggedEl.innerText);
+      else if (this.nearest.className === 'col') {
+        this.nearest.querySelector('.add-task').insertAdjacentElement('beforebegin', this.draggedEl);
+        this.notes[this.nearest.id].push(this.draggedEl.innerText);
       }
 
+      else {
+        this.currentPrevious.insertAdjacentElement('afterend', this.draggedEl);
+        this.draggedEl.style.removeProperty('top');
+        this.draggedEl.style.removeProperty('left');
+        this.shadowEl.remove();
+        this.draggedEl = null;
+        return;
+      }
+
+      
       this.refreshStorage();
-      document.body.removeChild(this.ghostEl);
-      this.ghostEl = null;
+      this.draggedEl.style.removeProperty('top');
+      this.draggedEl.style.removeProperty('left');
       this.draggedEl = null;
-      this.closest = null;
       this.position = null;
+      this.shadowEl.remove();
     });
   }
 }
